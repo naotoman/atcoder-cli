@@ -12,14 +12,17 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='sample',
+    name='atcoder-cli',
     version='0.1.0',
-    description='Sample package for Python-Guide.org',
+    description='cli tools for atcoder.',
     long_description=readme,
-    author='Kenneth Reitz',
-    author_email='me@kennethreitz.com',
-    url='https://github.com/kennethreitz/samplemod',
+    author='Naoto Kido',
+    author_email='me@example.com',
+    url='https://github.com/',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+    entry_points={
+        'console_scripts': ['atc=atcoder_cli.command_line:main'],
+    }
 )
 
