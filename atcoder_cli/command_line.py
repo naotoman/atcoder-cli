@@ -35,8 +35,38 @@ def command_init(args: argparse.Namespace) -> None:
 
 
 def command_sub(args: argparse.Namespace):
-    print(args)
-   
+    session = helpers.load_session()
+    if not (session and atcoder.is_signed(session)):
+        session = wrapper.signin()
+    conf = helpers.load_conf()
+    prob = args.problem
+    src = ''
+    with open(conf['src_files'][prob], 'r') as f:
+        src = f.read()
+
+    samples = wrapper.get_inout_samples(conf['contest'], prob, session)
+    submit = True
+    for stdin, stdout in zip(samples['input'], samples['output']):
+        result = wrapper.code_test(conf['contest'], conf['language'], src, stdin, session)
+        if result['Result']['ExitCode'] == 0 and result['Stdout'] == stdout:
+            continue
+        submit = False
+        print('[in]')
+        print(stdin)
+        if result['Result']['ExitCode'] != 0:
+            print('[err]')
+            print(result['Stderr'])
+        else:
+            print('[out (correct)]')
+            print(stdout)
+            print('[out (answer)]')
+            print(result['Stdout'])
+    if submit:
+        atcoder.submit(conf['contest'], prob, conf['language'], src, session)
+        print('passed test. submit.')
+    
+    helpers.dump_session(session)
+
 
 def command_test(args: argparse.Namespace):
     session = helpers.load_session()
@@ -50,7 +80,7 @@ def command_test(args: argparse.Namespace):
         src = f.read()
 
     samples = wrapper.get_inout_samples(conf['contest'], prob, session)
-    for stdin, stdout in (samples['input'], samples['output']):
+    for stdin, stdout in zip(samples['input'], samples['output']):
         result = wrapper.code_test(conf['contest'], conf['language'], src, stdin, session)
         print('[in]')
         print(stdin)

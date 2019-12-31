@@ -59,9 +59,9 @@ def get_inout_samples(contest: str, problem: str, session: Session) -> {}:
     outputs = []
     for div in divs:
         if "入力例" in div.section.h3.string:
-            inputs.append(div.section.pre.string)
+            inputs.append(div.section.pre.string.replace('\r\n', '\n'))
         if "出力例" in div.section.h3.string:
-            outputs.append(div.section.pre.string)
+            outputs.append(div.section.pre.string.replace('\r\n', '\n'))
     return {'input': inputs, 'output': outputs}
 
 
