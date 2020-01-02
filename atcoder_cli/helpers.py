@@ -36,6 +36,7 @@ def load_conf() -> Dict[str, Any]:
 
 def dump_conf(data: Dict[str, Any]) -> None:
     pt = Path(__file__).resolve().parents[0].joinpath('.internal', 'conf.json')
+    pt.touch()
     with open(pt, 'w') as f:
         json.dump(data, f, indent=4)
 
