@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .context import sample
+from .context import atcoder_cli
 
 import unittest
 
@@ -8,8 +8,8 @@ import unittest
 class AdvancedTestSuite(unittest.TestCase):
     """Advanced test cases."""
 
-    def test_thoughts(self):
-        self.assertIsNone(sample.hmm())
+    # def test_thoughts(self):
+    #     self.assertIsNone(atcoder_cli.hmm())
 
 
 if __name__ == '__main__':
