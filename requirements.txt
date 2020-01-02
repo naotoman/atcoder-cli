@@ -1,4 +1,2 @@
-nose
-sphinx
 beautifulsoup4
 requests
