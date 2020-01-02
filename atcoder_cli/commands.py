@@ -44,7 +44,7 @@ def command_init(args: argparse.Namespace) -> None:
     helpers.dump_session(session)
 
 
-def command_sub(args: argparse.Namespace):
+def command_sub(args: argparse.Namespace) -> None:
     session = helpers.load_session()
     if not (session and atcoder.is_signed(session)):
         session = wrapper.signin()
@@ -78,7 +78,7 @@ def command_sub(args: argparse.Namespace):
     helpers.dump_session(session)
 
 
-def command_test(args: argparse.Namespace):
+def command_test(args: argparse.Namespace) -> None:
     session = helpers.load_session()
     if not (session and atcoder.is_signed(session)):
         session = wrapper.signin()
@@ -104,7 +104,7 @@ def command_signin(args: argparse.Namespace) -> None:
     session = wrapper.signin()
     helpers.dump_session(session)
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 

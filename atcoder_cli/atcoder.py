@@ -1,8 +1,11 @@
-from . import helpers
+from typing import List, Dict, Any
 from bs4 import BeautifulSoup
 import requests
 from requests.sessions import Session
 import json
+
+from . import helpers
+
 
 ATCODER_URL = 'https://atcoder.jp'
 
@@ -44,13 +47,13 @@ def submit_custom_test(contest: str, lang: str, src: str, stdin: str, session: S
     session.post(custom_test_submit_api, data)
 
 
-def get_custom_test_result(contest: str, session: Session) -> {}:
+def get_custom_test_result(contest: str, session: Session) -> Dict[str, Any]:
     res = session.get(f'{ATCODER_URL}/contests/{contest}/custom_test/json')
     result = json.loads(res.text)
     return result
 
 
-def get_inout_samples(contest: str, problem: str, session: Session) -> {}:
+def get_inout_samples(contest: str, problem: str, session: Session) -> Dict[str, List[str]]:
     problem_url = f'{ATCODER_URL}/contests/{contest}/tasks/{contest}_{problem}'
     res = session.get(problem_url)
     bs = BeautifulSoup(res.text, "html.parser")
@@ -65,7 +68,7 @@ def get_inout_samples(contest: str, problem: str, session: Session) -> {}:
     return {'input': inputs, 'output': outputs}
 
 
-def get_problems(contest: str, session: Session) -> [str]:
+def get_problems(contest: str, session: Session) -> List[str]:
     problems_url = f'{ATCODER_URL}/contests/{contest}/tasks'
     res = session.get(problems_url)
     ng = not res
