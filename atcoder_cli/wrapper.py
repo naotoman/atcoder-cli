@@ -1,3 +1,4 @@
+from typing import Dict, List, Union, Any
 import getpass
 from requests.sessions import Session
 import time
@@ -13,7 +14,7 @@ def signin() -> Session:
     session = atcoder.signin(username, password)
     return session
 
-def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -> {}:
+def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -> Dict[str, Any]:
     atcoder.submit_custom_test(contest, lang, src, stdin, session)
     time.sleep(1)
     result = atcoder.get_custom_test_result(contest, session)
@@ -23,7 +24,7 @@ def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -
     
     return result
 
-def get_inout_samples(contest: str, problem: str, session: Session) -> {}:
+def get_inout_samples(contest: str, problem: str, session: Session) -> Dict[str, Union[str, List[str]]]:
     pt = Path(__file__).resolve().parents[0].joinpath('.internal', f'problem_{problem}.json')
     if pt.exists():
         with open(pt, 'r') as f:
