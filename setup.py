@@ -5,9 +5,6 @@
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as f:
-    readme = f.read()
-
 with open('LICENSE') as f:
     license = f.read()
 
@@ -18,7 +15,6 @@ setup(
     name='atcoder-cli',
     version='0.1.0',
     description='cli tools for atcoder.',
-    long_description=readme,
     author='Naoto Kido',
     url='https://github.com/',
     license=license,
