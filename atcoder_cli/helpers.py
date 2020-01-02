@@ -41,4 +41,5 @@ def dump_conf(data) -> None:
 def get_lang_info(lang: str) -> (str, str):
     lang_info = {}
     lang_info['python3'] = ('3023', 'py')
+    lang_info['rust'] = ('3504', 'rs')
     return lang_info[lang]

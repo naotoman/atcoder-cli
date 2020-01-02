@@ -1,8 +1,6 @@
 import argparse
 from pathlib import Path
-import getpass
 import os
-import time
 
 from . import atcoder
 from . import wrapper
@@ -16,19 +14,31 @@ def command_init(args: argparse.Namespace) -> None:
     contest = args.contest
     lang = args.lang
     problems = atcoder.get_problems(contest, session)
-
-    if Path(contest).exists():
-        print('already exists')
-        return
     lang_info = helpers.get_lang_info(lang)
-    for p in problems:
-        Path(f'{contest}/{p}').mkdir(parents=True)
-        Path(f'{contest}/{p}/{p}.{lang_info[1]}').touch()
+
+    if not Path(f'{contest}/{lang}').exists():
+        Path(f'{contest}/{lang}/src').mkdir(parents=True)
+        for p in problems:
+            Path(f'{contest}/{lang}/src/{p}.{lang_info[1]}').touch()
+    if lang == 'rust':
+        pt_dir = Path(__file__).resolve().parents[0]/'resources'/lang
+        with open(pt_dir/'template.rs', 'r') as t:
+            template = t.read()
+            for p in problems:
+                with open(f'{contest}/{lang}/src/{p}.{lang_info[1]}', 'w') as f:
+                    f.write(template)
+        with open(pt_dir/'Cargo.toml', 'r') as r, open(f'{contest}/{lang}/Cargo.toml', 'w') as w:
+            toml = r.read()
+            w.write(toml + '\n')
+            for p in problems:
+                w.write(f'[[bin]]\nname = "{p}"\npath = "src/{p}.rs"\n\n')
+                
+        
     
     conf = {'contest': contest, 'language': lang_info[0]}
     conf['src_files'] = {}
     for p in problems:
-        conf['src_files'][p] = f'{os.getcwd()}/{contest}/{p}/{p}.{lang_info[1]}'
+        conf['src_files'][p] = f'{os.getcwd()}/{contest}/{lang}/src/{p}.{lang_info[1]}'
 
     helpers.dump_conf(conf)
     helpers.dump_session(session)
@@ -101,7 +111,7 @@ def main():
     # init
     parser_init = subparsers.add_parser('init', help='see `init -h`')
     parser_init.add_argument('-c', required=True, help='contest name', dest='contest')
-    lang_options = ['python3', 'pypy']
+    lang_options = ['python3', 'rust']
     parser_init.add_argument('-l', required=True, choices=lang_options, help='programming language to use', dest='lang')
     parser_init.set_defaults(func=command_init)
 
