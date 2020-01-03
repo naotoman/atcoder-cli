@@ -7,16 +7,6 @@ from pathlib import Path
 import pickle
 
 
-def get_answer():
-    """Get an answer."""
-    return True
-
-def get_csrf(session: Session, url: str) -> str:
-    res = session.get(url)
-    bs = BeautifulSoup(res.text, 'html.parser')
-    csrf = bs.find(attrs={'name':'csrf_token'}).get('value')
-    return csrf
-
 def dump_session(session: Session) -> None:
     with open(Path(__file__).resolve().parents[0].joinpath('.internal', 'session'), 'wb') as f:
         pickle.dump(session, f)
