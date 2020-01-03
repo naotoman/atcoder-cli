@@ -109,8 +109,8 @@ def command_result(args: argparse.Namespace) -> None:
     session = helpers.get_session()
     if not site.is_signed(session):
         wrapper.signin(session)
-    conf = helpers.load_conf()
-    results = site.get_submit_results(conf['contest'], session)
+    contest = args.contest or helpers.load_conf()['contest']
+    results = site.get_submit_results(contest, session)
     color_green = '\033[92m'
     color_end = '\033[0m'
     max_len = max(map(lambda x: len(x[-1]), results.values()))
@@ -123,7 +123,7 @@ def command_result(args: argparse.Namespace) -> None:
             print(f'{l_str} ({color_green}AC{color_end})')
         else:
             print(f'{l_str}')
-
+    helpers.dump_session(session)
 
 def command_su(args: argparse.Namespace) -> None:
     session = requests.Session()
@@ -163,6 +163,7 @@ def main() -> None:
 
     # result
     parser_result = subparsers.add_parser('result', help='get the results of the most recent submissions')
+    parser_result.add_argument('-c', '--contest', help='contest name', dest='contest')
     parser_result.set_defaults(func=command_result)
 
     # clean
