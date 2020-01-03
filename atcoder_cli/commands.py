@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 import os
+import requests
 
 from .atcoder import Atcoder
 from . import wrapper
@@ -102,9 +103,30 @@ def command_test(args: argparse.Namespace) -> None:
         print(stdout == result['Stdout'])
     
     helpers.dump_session(session)
-    
-def command_signin(args: argparse.Namespace) -> None:
+
+
+def command_result(args: argparse.Namespace) -> None:
     session = helpers.get_session()
+    if not site.is_signed(session):
+        wrapper.signin(session)
+    contest = args.contest or helpers.load_conf()['contest']
+    results = site.get_submit_results(contest, session)
+    color_green = '\033[92m'
+    color_end = '\033[0m'
+    max_len = max(map(lambda x: len(x[-1]), results.values()))
+    for p in sorted(results.keys()):
+        print(f'{p}: ', end='')
+        l_str = results[p][-1].ljust(max_len)
+        if results[p][-1] == 'AC':
+            print(f'{color_green}{l_str}{color_end} ({color_green}AC{color_end})')
+        elif 'AC' in results[p]:
+            print(f'{l_str} ({color_green}AC{color_end})')
+        else:
+            print(f'{l_str}')
+    helpers.dump_session(session)
+
+def command_su(args: argparse.Namespace) -> None:
+    session = requests.Session()
     wrapper.signin(session)
     helpers.dump_session(session)
 
@@ -124,9 +146,9 @@ def main() -> None:
     parser_init.add_argument('-l', required=True, choices=lang_options, help='programming language to use', dest='lang')
     parser_init.set_defaults(func=command_init)
 
-    # signin
-    parser_signin = subparsers.add_parser('signin', help='sign in to AtCoder')
-    parser_signin.set_defaults(func=command_signin)
+    # su
+    parser_su = subparsers.add_parser('su', help='change user for AtCoder')
+    parser_su.set_defaults(func=command_su)
 
     # submit
     parser_sub = subparsers.add_parser('sub', help='test your code and submit it to AtCoder server')
@@ -138,6 +160,11 @@ def main() -> None:
     parser_test = subparsers.add_parser('test', help='test your code on AtCoder server')
     parser_test.add_argument('problem', help='problem to solve')
     parser_test.set_defaults(func=command_test)
+
+    # result
+    parser_result = subparsers.add_parser('result', help='get the results of the most recent submissions')
+    parser_result.add_argument('-c', '--contest', help='contest name', dest='contest')
+    parser_result.set_defaults(func=command_result)
 
     # clean
     parser_clean = subparsers.add_parser('clean', help='clean internal used data (like session)')

@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from bs4 import BeautifulSoup
 import requests
 from requests.sessions import Session
@@ -79,6 +79,29 @@ class Atcoder:
             return [row.findAll('td')[0].string.lower() for row in rows]
         else:
             return [row.findAll('td')[0].a.string.lower() for row in rows]
+
+    def get_submit_results(self, contest: str, session: Session) -> Dict[str, List[str]]:
+        result_url = f'{ATCODER_URL}/contests/{contest}/submissions/me?orderBy=created'
+        res = session.get(f'{result_url}&page=1')
+        bs = BeautifulSoup(res.text, "html.parser")
+        
+        pages = bs.find('ul', class_='pagination').findAll('li')
+        max_page = max(map(lambda x: int(x.a.string), pages))
+
+        results = {}
+        for i in range(1, max_page + 1):
+            if i > 1:
+                res = session.get(f'{result_url}&page={i}')
+                bs = BeautifulSoup(res.text, "html.parser")
+            rows = bs.find('tbody').findAll('tr')
+            for tr in rows:
+                tds = tr.findAll('td')
+                prob = tds[1].a.get('href').split('_')[-1].lower()
+                status = tds[6].span.string
+                if not prob in results:
+                    results[prob] = []
+                results[prob].append(status)
+        return results
 
 
     def __get_csrf(self, url: str, session: Session) -> str:
