@@ -1,2 +1,2 @@
 include LICENSE
-recursive-include atcoder_cli/resources *
+recursive-include atcoder_cli/resources/*
