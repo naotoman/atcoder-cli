@@ -16,7 +16,7 @@ setup(
     version='0.1.0',
     description='cli tools for atcoder.',
     author='Naoto Kido',
-    url='https://github.com/',
+    url='https://github.com/'
     license=license,
     packages=find_packages(exclude=('tests')),
     install_requires=_requires_from_file('requirements.txt'),
