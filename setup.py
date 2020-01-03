@@ -18,6 +18,7 @@ setup(
     license=license,
     packages=find_packages(exclude=('tests')),
     install_requires=_requires_from_file('requirements.txt'),
+    include_package_data=True,
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "pytest-cov"],
     entry_points={
