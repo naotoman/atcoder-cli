@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Learn more: https://github.com/kennethreitz/setup.py
-
 from setuptools import setup, find_packages
 
 
@@ -16,7 +14,7 @@ setup(
     version='0.1.0',
     description='cli tools for atcoder.',
     author='Naoto Kido',
-    url='https://github.com/'
+    url='https://github.com/naotoman/atcoder-tool',
     license=license,
     packages=find_packages(exclude=('tests')),
     install_requires=_requires_from_file('requirements.txt'),

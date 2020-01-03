@@ -2,52 +2,55 @@ import argparse
 from pathlib import Path
 import os
 
-from . import atcoder
+from .atcoder import Atcoder
 from . import wrapper
 from . import helpers
 
+
+site = Atcoder()
+
 def command_init(args: argparse.Namespace) -> None:
-    session = helpers.load_session()
-    if not (session and atcoder.is_signed(session)):
-        session = wrapper.signin()
+    session = helpers.get_session()
+    if not site.is_signed(session):
+        wrapper.signin(session)
 
     contest = args.contest
     lang = args.lang
-    problems = atcoder.get_problems(contest, session)
+    problems = site.get_problems(contest, session)
     lang_info = helpers.get_lang_info(lang)
+    cur = Path('.')
 
-    if not Path(f'{contest}/{lang}').exists():
-        Path(f'{contest}/{lang}/src').mkdir(parents=True)
+    if not (cur/contest/lang).exists():
+        (cur/contest/lang/'src').mkdir(parents=True)
         for p in problems:
-            Path(f'{contest}/{lang}/src/{p}.{lang_info[1]}').touch()
-    if lang == 'rust':
-        pt_dir = Path(__file__).resolve().parents[0]/'resources'/lang
-        with open(pt_dir/'template.rs', 'r') as t:
-            template = t.read()
-            for p in problems:
-                with open(f'{contest}/{lang}/src/{p}.{lang_info[1]}', 'w') as f:
-                    f.write(template)
-        with open(pt_dir/'Cargo.toml', 'r') as r, open(f'{contest}/{lang}/Cargo.toml', 'w') as w:
-            toml = r.read()
-            w.write(toml + '\n')
-            for p in problems:
-                w.write(f'[[bin]]\nname = "{p}"\npath = "src/{p}.rs"\n\n')
+            (cur/contest/lang/'src'/f'{p}.{lang_info[1]}').touch()
+        if lang == 'rust':
+            pt_dir = Path(__file__).resolve().parents[0]/'resources'/lang
+            with open(pt_dir/'template.rs', 'r') as t:
+                template = t.read()
+                for p in problems:
+                    with open(cur/contest/lang/'src'/f'{p}.{lang_info[1]}', 'w') as f:
+                        f.write(template)
+            with open(pt_dir/'Cargo.toml', 'r') as r, open(cur/contest/lang/'Cargo.toml', 'w') as w:
+                toml = r.read()
+                w.write(toml + '\n')
+                for p in problems:
+                    abs_path = str((cur/contest/lang/'src'/f'{p}.rs').resolve())
+                    w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
                 
-        
-    
     conf = {'contest': contest, 'language': lang_info[0]}
     conf['src_files'] = {}
     for p in problems:
-        conf['src_files'][p] = f'{os.getcwd()}/{contest}/{lang}/src/{p}.{lang_info[1]}'
+        conf['src_files'][p] = str((cur/contest/lang/'src'/f'{p}.{lang_info[1]}').resolve())
 
     helpers.dump_conf(conf)
     helpers.dump_session(session)
 
 
 def command_sub(args: argparse.Namespace) -> None:
-    session = helpers.load_session()
-    if not (session and atcoder.is_signed(session)):
-        session = wrapper.signin()
+    session = helpers.get_session()
+    if not site.is_signed(session):
+        wrapper.signin(session)
     conf = helpers.load_conf()
     prob = args.problem
     src = ''
@@ -72,16 +75,16 @@ def command_sub(args: argparse.Namespace) -> None:
             print('[out (answer)]')
             print(result['Stdout'])
     if submit:
-        atcoder.submit(conf['contest'], prob, conf['language'], src, session)
+        site.submit(conf['contest'], prob, conf['language'], src, session)
         print('passed test. submit.')
     
     helpers.dump_session(session)
 
 
 def command_test(args: argparse.Namespace) -> None:
-    session = helpers.load_session()
-    if not (session and atcoder.is_signed(session)):
-        session = wrapper.signin()
+    session = helpers.get_session()
+    if not site.is_signed(session):
+        wrapper.signin(session)
     
     conf = helpers.load_conf()
     prob = args.problem
@@ -101,34 +104,48 @@ def command_test(args: argparse.Namespace) -> None:
     helpers.dump_session(session)
     
 def command_signin(args: argparse.Namespace) -> None:
-    session = wrapper.signin()
+    session = helpers.get_session()
+    wrapper.signin(session)
     helpers.dump_session(session)
+
+def command_clean(args: argparse.Namespace) -> None:
+    conf_dir = Path.home()/'.atcoder_cli_info'
+    for p in conf_dir.iterdir():
+        p.unlink()
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
     # init
-    parser_init = subparsers.add_parser('init', help='see `init -h`')
+    parser_init = subparsers.add_parser('init', help='set config and make directories for the contest')
     parser_init.add_argument('-c', required=True, help='contest name', dest='contest')
-    lang_options = ['python3', 'rust']
+    lang_options = ['python', 'rust']
     parser_init.add_argument('-l', required=True, choices=lang_options, help='programming language to use', dest='lang')
     parser_init.set_defaults(func=command_init)
 
     # signin
-    parser_signin = subparsers.add_parser('signin', help='see `signin -h`')
+    parser_signin = subparsers.add_parser('signin', help='sign in to AtCoder')
     parser_signin.set_defaults(func=command_signin)
 
     # submit
-    parser_sub = subparsers.add_parser('sub', help='see `sub -h`')
+    parser_sub = subparsers.add_parser('sub', help='test your code and submit it to AtCoder server')
     parser_sub.add_argument('problem', help='problem to solve')
     parser_sub.add_argument('-f', '--force', action='store_true', help='submit without testing')
     parser_sub.set_defaults(func=command_sub)
 
     # test
-    parser_test = subparsers.add_parser('test', help='see `test -h`')
+    parser_test = subparsers.add_parser('test', help='test your code on AtCoder server')
     parser_test.add_argument('problem', help='problem to solve')
     parser_test.set_defaults(func=command_test)
+
+    # clean
+    parser_clean = subparsers.add_parser('clean', help='clean internal used data (like session)')
+    parser_clean.set_defaults(func=command_clean)
+
+    info_dir = Path.home()/'.atcoder_cli_info'
+    if not info_dir.exists():
+        info_dir.mkdir()
 
     args = parser.parse_args()
     args.func(args)
