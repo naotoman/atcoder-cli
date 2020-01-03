@@ -5,22 +5,23 @@ import time
 from pathlib import Path
 import json
 
-from . import atcoder
+from .atcoder import Atcoder
 from . import helpers
 
-def signin() -> Session:
+site = Atcoder()
+
+def signin(session: Session) -> None:
     username = input('Username: ')
     password = getpass.getpass()
-    session = atcoder.signin(username, password)
-    return session
+    site.signin(username, password, session)
 
 def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -> Dict[str, Any]:
-    atcoder.submit_custom_test(contest, lang, src, stdin, session)
+    site.submit_custom_test(contest, lang, src, stdin, session)
     time.sleep(1)
-    result = atcoder.get_custom_test_result(contest, session)
+    result = site.get_custom_test_result(contest, session)
     while result['Result']['Status'] != 3:
         time.sleep(1)
-        result = atcoder.get_custom_test_result(contest, session)
+        result = site.get_custom_test_result(contest, session)
     
     return result
 
@@ -32,7 +33,7 @@ def get_inout_samples(contest: str, problem: str, session: Session) -> Dict[str,
             if js['contest'] == contest:
                 return js
     with open(pt, 'w') as f:
-        js = atcoder.get_inout_samples(contest, problem, session)
+        js = site.get_inout_samples(contest, problem, session)
         js['contest'] = contest
         json.dump(js, f)
         return js
