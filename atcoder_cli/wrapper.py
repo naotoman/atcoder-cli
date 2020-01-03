@@ -26,7 +26,7 @@ def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -
     return result
 
 def get_inout_samples(contest: str, problem: str, session: Session) -> Dict[str, Union[str, List[str]]]:
-    pt = Path(__file__).resolve().parents[0].joinpath('.internal', f'problem_{problem}.json')
+    pt = Path.home()/'.atcoder_cli_info'/f'problem_{problem}.json'
     if pt.exists():
         with open(pt, 'r') as f:
             js = json.load(f)
