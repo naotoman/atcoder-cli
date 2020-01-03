@@ -125,7 +125,7 @@ def command_result(args: argparse.Namespace) -> None:
             print(f'{l_str}')
 
 
-def command_signin(args: argparse.Namespace) -> None:
+def command_su(args: argparse.Namespace) -> None:
     session = requests.Session()
     wrapper.signin(session)
     helpers.dump_session(session)
@@ -146,9 +146,9 @@ def main() -> None:
     parser_init.add_argument('-l', required=True, choices=lang_options, help='programming language to use', dest='lang')
     parser_init.set_defaults(func=command_init)
 
-    # signin
-    parser_signin = subparsers.add_parser('signin', help='sign in to AtCoder')
-    parser_signin.set_defaults(func=command_signin)
+    # su
+    parser_su = subparsers.add_parser('su', help='change user for AtCoder')
+    parser_su.set_defaults(func=command_su)
 
     # submit
     parser_sub = subparsers.add_parser('sub', help='test your code and submit it to AtCoder server')
