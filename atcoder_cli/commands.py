@@ -10,9 +10,9 @@ from . import helpers
 
 site = Atcoder()
 
-def command_init(args: argparse.Namespace) -> None:
+def command_gen(args: argparse.Namespace) -> None:
     session = helpers.get_session()
-    if not site.is_signed(session):
+    if not site.get_current_user(session):
         wrapper.signin(session)
 
     contest = args.contest
@@ -49,8 +49,9 @@ def command_init(args: argparse.Namespace) -> None:
 
 
 def command_sub(args: argparse.Namespace) -> None:
+    print(args.contest)
     session = helpers.get_session()
-    if not site.is_signed(session):
+    if not site.get_current_user(session):
         wrapper.signin(session)
     conf = helpers.load_conf()
     prob = args.problem
@@ -84,7 +85,7 @@ def command_sub(args: argparse.Namespace) -> None:
 
 def command_test(args: argparse.Namespace) -> None:
     session = helpers.get_session()
-    if not site.is_signed(session):
+    if not site.get_current_user(session):
         wrapper.signin(session)
     
     conf = helpers.load_conf()
@@ -107,7 +108,7 @@ def command_test(args: argparse.Namespace) -> None:
 
 def command_result(args: argparse.Namespace) -> None:
     session = helpers.get_session()
-    if not site.is_signed(session):
+    if not site.get_current_user(session):
         wrapper.signin(session)
     contest = args.contest or helpers.load_conf()['contest']
     results = site.get_submit_results(contest, session)
@@ -125,10 +126,21 @@ def command_result(args: argparse.Namespace) -> None:
             print(f'{l_str}')
     helpers.dump_session(session)
 
-def command_su(args: argparse.Namespace) -> None:
+def command_login(args: argparse.Namespace) -> None:
     session = requests.Session()
     wrapper.signin(session)
     helpers.dump_session(session)
+
+def command_user(args: argparse.Namespace) -> None:
+    session = helpers.get_session()
+    usr = site.get_current_user(session)
+    if usr:
+        print(f'You are logged in as `{usr}`.')
+    else:
+        print('You are not logged in.')
+
+def command_conf(args: argparse.Namespace) -> None:
+    data = helpers.load_conf()
 
 def command_clean(args: argparse.Namespace) -> None:
     conf_dir = Path.home()/'.atcoder_cli_info'
@@ -139,32 +151,46 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
 
-    # init
-    parser_init = subparsers.add_parser('init', help='set config and make directories for the contest')
-    parser_init.add_argument('-c', required=True, help='contest name', dest='contest')
+    # login
+    parser_login = subparsers.add_parser('login', help='log in to AtCoder')
+    parser_login.set_defaults(func=command_login)
+
+    # gen
+    parser_gen = subparsers.add_parser('gen', help='set defaults and make directories for the contest')
+    parser_gen.add_argument('contest', help='contest name')
     lang_options = ['python', 'rust']
-    parser_init.add_argument('-l', required=True, choices=lang_options, help='programming language to use', dest='lang')
-    parser_init.set_defaults(func=command_init)
-
-    # su
-    parser_su = subparsers.add_parser('su', help='change user for AtCoder')
-    parser_su.set_defaults(func=command_su)
-
-    # submit
-    parser_sub = subparsers.add_parser('sub', help='test your code and submit it to AtCoder server')
-    parser_sub.add_argument('problem', help='problem to solve')
-    parser_sub.add_argument('-f', '--force', action='store_true', help='submit without testing')
-    parser_sub.set_defaults(func=command_sub)
+    parser_gen.add_argument('-l', '--lang', choices=lang_options, help='programming language')
+    parser_gen.set_defaults(func=command_gen)
 
     # test
     parser_test = subparsers.add_parser('test', help='test your code on AtCoder server')
     parser_test.add_argument('problem', help='problem to solve')
+    parser_test.add_argument('-c', '--contest', help='contest name')
+    parser_test.add_argument('-l', '--lang', help='programming language for your code')
+    parser_test.add_argument('-s', '--src', help='path to your source code')
     parser_test.set_defaults(func=command_test)
 
+    # sub
+    parser_sub = subparsers.add_parser('sub', help='test your code and submit it to AtCoder server')
+    parser_sub.add_argument('problem', help='problem to solve')
+    parser_sub.add_argument('-f', '--force', action='store_true', help='submit without testing')
+    parser_sub.add_argument('-c', '--contest', help='contest name')
+    parser_sub.add_argument('-l', '--lang', help='programming language for your code')
+    parser_sub.add_argument('-s', '--src', help='path to your source code')
+    parser_sub.set_defaults(func=command_sub)
+
     # result
-    parser_result = subparsers.add_parser('result', help='get the results of the most recent submissions')
-    parser_result.add_argument('-c', '--contest', help='contest name', dest='contest')
+    parser_result = subparsers.add_parser('result', help='show results of the newest submissions for each problem')
+    parser_result.add_argument('-c', '--contest', help='contest name')
     parser_result.set_defaults(func=command_result)
+
+    # user
+    parser_user = subparsers.add_parser('user', help='show the logged in user')
+    parser_user.set_defaults(func=command_user)
+
+    # conf
+    parser_conf = subparsers.add_parser('conf', help='show the current configuration')
+    parser_conf.set_defaults(func=command_conf)
 
     # clean
     parser_clean = subparsers.add_parser('clean', help='clean internal used data (like session)')

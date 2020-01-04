@@ -1,19 +1,24 @@
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Union
 from bs4 import BeautifulSoup
 import requests
 from requests.sessions import Session
 import json
+import re
 
 ATCODER_URL = 'https://atcoder.jp'
 
 
 class Atcoder:
 
-    def is_signed(self, session: Session) -> bool:
-        test_url = f'{ATCODER_URL}/contests/agc002/submit'
-        res = session.get(test_url, allow_redirects=False)
-        return res.status_code == 200
-
+    def get_current_user(self, session: Session) -> str:
+        quit_url = f'{ATCODER_URL}/quit'
+        res = session.get(quit_url, allow_redirects=False)
+        if res.status_code != 200:
+            return ''
+        else:
+            bs = BeautifulSoup(res.text, "html.parser")
+            la = bs.find('label', text=re.compile('(Username|ユーザ名)'))
+            return la.parent.find('input')['value']
 
     def signin(self, username: str, password: str, session: Session) -> None:
         signin_url = f'{ATCODER_URL}/login'

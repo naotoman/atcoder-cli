@@ -5,6 +5,7 @@ import json
 from bs4 import BeautifulSoup
 from pathlib import Path
 import pickle
+import os
 
 
 conf_dir = Path.home()/'.atcoder_cli_info'
