@@ -199,6 +199,7 @@ def main() -> None:
     info_dir = Path.home()/'.atcoder_cli_info'
     if not info_dir.exists():
         info_dir.mkdir()
+        info_dir.chmod(0o700)
 
     args = parser.parse_args()
     args.func(args)

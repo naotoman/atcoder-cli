@@ -11,8 +11,10 @@ import os
 conf_dir = Path.home()/'.atcoder_cli_info'
 
 def dump_session(session: Session) -> None:
-    with open(conf_dir/'cookie.pkl', 'wb') as f:
+    ck = conf_dir/'cookie.pkl'
+    with open(ck, 'wb') as f:
         pickle.dump(session, f)
+        ck.chmod(0o600)
 
 def get_session() -> Session:
     ck = conf_dir/'cookie.pkl'
