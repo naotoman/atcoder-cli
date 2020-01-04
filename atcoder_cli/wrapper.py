@@ -10,10 +10,10 @@ from . import helpers
 
 site = Atcoder()
 
-def signin(session: Session) -> None:
+def login(session: Session) -> None:
     username = input('Username: ')
     password = getpass.getpass()
-    site.signin(username, password, session)
+    site.login(username, password, session)
 
 def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -> Dict[str, Any]:
     site.submit_custom_test(contest, lang, src, stdin, session)

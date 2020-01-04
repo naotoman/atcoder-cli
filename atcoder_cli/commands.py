@@ -13,7 +13,7 @@ site = Atcoder()
 def command_gen(args: argparse.Namespace) -> None:
     session = helpers.get_session()
     if not site.get_current_user(session):
-        wrapper.signin(session)
+        wrapper.login(session)
 
     contest = args.contest
     lang = args.lang
@@ -39,10 +39,10 @@ def command_gen(args: argparse.Namespace) -> None:
                     abs_path = str((cur/contest/lang/'src'/f'{p}.rs').resolve())
                     w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
                 
-    conf = {'contest': contest, 'language': lang_info[0]}
-    conf['src_files'] = {}
+    conf = {'contest': contest, 'lang': lang_info[0]}
+    conf['src'] = {}
     for p in problems:
-        conf['src_files'][p] = str((cur/contest/lang/'src'/f'{p}.{lang_info[1]}').resolve())
+        conf['src'][p] = str((cur/contest/lang/'src'/f'{p}.{lang_info[1]}').resolve())
 
     helpers.dump_conf(conf)
     helpers.dump_session(session)
@@ -52,17 +52,17 @@ def command_sub(args: argparse.Namespace) -> None:
     print(args.contest)
     session = helpers.get_session()
     if not site.get_current_user(session):
-        wrapper.signin(session)
+        wrapper.login(session)
     conf = helpers.load_conf()
     prob = args.problem
     src = ''
-    with open(conf['src_files'][prob], 'r') as f:
+    with open(conf['src'][prob], 'r') as f:
         src = f.read()
 
     samples = wrapper.get_inout_samples(conf['contest'], prob, session)
     submit = True
     for stdin, stdout in zip(samples['input'], samples['output']):
-        result = wrapper.code_test(conf['contest'], conf['language'], src, stdin, session)
+        result = wrapper.code_test(conf['contest'], conf['lang'], src, stdin, session)
         if result['Result']['ExitCode'] == 0 and result['Stdout'] == stdout:
             continue
         submit = False
@@ -77,7 +77,7 @@ def command_sub(args: argparse.Namespace) -> None:
             print('[out (answer)]')
             print(result['Stdout'])
     if submit:
-        site.submit(conf['contest'], prob, conf['language'], src, session)
+        site.submit(conf['contest'], prob, conf['lang'], src, session)
         print('passed test. submit.')
     
     helpers.dump_session(session)
@@ -86,17 +86,17 @@ def command_sub(args: argparse.Namespace) -> None:
 def command_test(args: argparse.Namespace) -> None:
     session = helpers.get_session()
     if not site.get_current_user(session):
-        wrapper.signin(session)
+        wrapper.login(session)
     
     conf = helpers.load_conf()
     prob = args.problem
     src = ''
-    with open(conf['src_files'][prob], 'r') as f:
+    with open(conf['src'][prob], 'r') as f:
         src = f.read()
 
     samples = wrapper.get_inout_samples(conf['contest'], prob, session)
     for stdin, stdout in zip(samples['input'], samples['output']):
-        result = wrapper.code_test(conf['contest'], conf['language'], src, stdin, session)
+        result = wrapper.code_test(conf['contest'], conf['lang'], src, stdin, session)
         print('[in]')
         print(stdin)
         print('[out]')
@@ -109,7 +109,7 @@ def command_test(args: argparse.Namespace) -> None:
 def command_result(args: argparse.Namespace) -> None:
     session = helpers.get_session()
     if not site.get_current_user(session):
-        wrapper.signin(session)
+        wrapper.login(session)
     contest = args.contest or helpers.load_conf()['contest']
     results = site.get_submit_results(contest, session)
     color_green = '\033[92m'
@@ -128,7 +128,7 @@ def command_result(args: argparse.Namespace) -> None:
 
 def command_login(args: argparse.Namespace) -> None:
     session = requests.Session()
-    wrapper.signin(session)
+    wrapper.login(session)
     helpers.dump_session(session)
 
 def command_user(args: argparse.Namespace) -> None:

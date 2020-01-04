@@ -20,13 +20,13 @@ class Atcoder:
             la = bs.find('label', text=re.compile('(Username|ユーザ名)'))
             return la.parent.find('input')['value']
 
-    def signin(self, username: str, password: str, session: Session) -> None:
-        signin_url = f'{ATCODER_URL}/login'
+    def login(self, username: str, password: str, session: Session) -> None:
+        login_url = f'{ATCODER_URL}/login'
 
         data = {'username': username, 'password': password}
-        data['csrf_token'] = self.__get_csrf(signin_url, session)
+        data['csrf_token'] = self.__get_csrf(login_url, session)
 
-        session.post(signin_url, data=data)
+        session.post(login_url, data=data)
 
 
     def submit(self, contest: str, problem: str, lang: str, src: str, session: Session) -> None:
