@@ -90,6 +90,8 @@ def get_submit_results(contest: str, session: Session) -> Dict[str, List[str]]:
     bs = BeautifulSoup(res.text, "html.parser")
     
     pages = bs.find('ul', class_='pagination').findAll('li')
+    if not pages:
+        return {}
     max_page = max(map(lambda x: int(x.a.string), pages))
 
     results = {}

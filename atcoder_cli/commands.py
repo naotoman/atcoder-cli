@@ -138,6 +138,9 @@ def command_result(args: argparse.Namespace) -> None:
     io.dump_session(session)
 
     results = atcoder.get_submit_results(contest, session)
+    if not results:
+        print(f'There are no submissions for {contest}.')
+        return
     max_len = max(map(lambda x: len(x[-1]), results.values()))
     for p in sorted(results.keys()):
         print(f'{p}: ', end='')
