@@ -1,8 +1,7 @@
-from typing import Dict, Tuple, Any, Union
+from typing import Dict, Any
 import requests
 from requests.sessions import Session
 import json
-from bs4 import BeautifulSoup
 from pathlib import Path
 import pickle
 
