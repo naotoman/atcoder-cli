@@ -1,15 +1,16 @@
 # Cli tools for AtCoder
 
 ## Requirements
-Python >= 3.5
+- macOS or Linux
+- Python >= 3.7
 
 ## How to install
 ```
-$ pip install git+https://github.com/naotoman/atcoder-cli
+$ python3 -m pip install git+https://github.com/naotoman/atcoder-cli
 ```
 
 ## how to use
-Full guide will be added in the future.
+Full guide will be added in the future.  
 For now, type this command.
 ```
 $ atc --help
