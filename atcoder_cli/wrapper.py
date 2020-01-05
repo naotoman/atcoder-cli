@@ -17,16 +17,3 @@ def code_test(contest: str, lang: str, src: str, stdin: str, session: Session) -
         result = atcoder.get_custom_test_result(contest, session)
     
     return result
-
-def get_inout_samples(contest: str, problem: str, session: Session) -> Dict[str, Union[str, List[str]]]:
-    pt = Path.home()/'.atcoder_cli_info'/f'problem_{problem}.json'
-    if pt.exists():
-        with open(pt, 'r') as f:
-            js = json.load(f)
-            if js['contest'] == contest:
-                return js
-    with open(pt, 'w') as f:
-        js = atcoder.get_inout_samples(contest, problem, session)
-        js['contest'] = contest
-        json.dump(js, f)
-        return js
