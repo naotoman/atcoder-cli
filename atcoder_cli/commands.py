@@ -48,9 +48,9 @@ def command_gen(args: argparse.Namespace) -> None:
             cargo = pkgutil.get_data('atcoder_cli', 'resources/rust/Cargo.toml').decode()
             with open(base/'Cargo.toml', 'w') as w:
                 w.write(cargo + '\n')
-            for p in problems:
-                abs_path = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
-                w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
+                for p in problems:
+                    abs_path = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
+                    w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
         print(f'make directories and files under `{base}`.')
                 
     conf = {'contest': contest, 'lang': lang}

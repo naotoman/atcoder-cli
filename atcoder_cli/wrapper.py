@@ -1,9 +1,6 @@
-from typing import Dict, List, Union, Any
-import getpass
+from typing import Dict, Any
 from requests.sessions import Session
 import time
-from pathlib import Path
-import json
 
 from . import atcoder
 

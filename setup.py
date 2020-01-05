@@ -12,9 +12,9 @@ def _requires_from_file(filename):
 setup(
     name='atcoder-cli',
     version='0.1.0',
-    description='cli tools for atcoder.',
+    description='cli tools for AtCoder.',
     author='Naoto Kido',
-    url='https://github.com/naotoman/atcoder-tool',
+    url='https://github.com/naotoman/atcoder-cli',
     license=license,
     packages=find_packages(exclude=('tests')),
     install_requires=_requires_from_file('requirements.txt'),
