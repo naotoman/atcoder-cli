@@ -1,3 +1,4 @@
+import pkgutil
 from typing import Dict
 import argparse
 from pathlib import Path
@@ -17,43 +18,47 @@ ENDC = '\033[0m'
 
 
 def command_gen(args: argparse.Namespace) -> None:
-    session = _get_session()
-
-    # validation
-    
-
-    contest = args.contest
+    # validation for lang
     lang = args.lang
-    problems = atcoder.get_problems(contest, session)
-    lang_info = []
-    cur = Path('.')
-
-    if not (cur/contest/lang).exists():
-        (cur/contest/lang/'src').mkdir(parents=True)
-        for p in problems:
-            (cur/contest/lang/'src'/f'{p}.{lang_info[1]}').touch()
-        if lang == 'rust':
-            pt_dir = Path(__file__).resolve().parents[0]/'resources'/lang
-            with open(pt_dir/'template.rs', 'r') as t:
-                template = t.read()
-                for p in problems:
-                    with open(cur/contest/lang/'src'/f'{p}.{lang_info[1]}', 'w') as f:
-                        f.write(template)
-            with open(pt_dir/'Cargo.toml', 'r') as r, open(cur/contest/lang/'Cargo.toml', 'w') as w:
-                toml = r.read()
-                w.write(toml + '\n')
-                for p in problems:
-                    abs_path = str((cur/contest/lang/'src'/f'{p}.rs').resolve())
-                    w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
-                
-    conf = {'contest': contest, 'lang': lang_info[0]}
-    conf['src'] = {}
-    for p in problems:
-        conf['src'][p] = str((cur/contest/lang/'src'/f'{p}.{lang_info[1]}').resolve())
-
-    io.dump_conf(conf)
+    if lang is None and io.has_conf():
+        lang = io.load_conf().get('lang', None)
+    if lang is None:
+        print(f'{FAILC}use -l option or edit conf.json to specify a language.{ENDC}')
+        exit()
+    
+    contest = args.contest
+    session = _get_session()
     io.dump_session(session)
 
+    problems = atcoder.get_problems(contest, session)
+
+    base = Path('.')/contest/lg.dir_name(lang)
+    if base.exists():
+        print(f'{base} already exists. make no change for the directories.')
+    else:
+        (base/'src').mkdir(parents=True)
+        for p in problems:
+            (base/'src'/f'{p}.{lg.suffix(lang)}').touch()
+        # if lang is 'rust', set additional files.
+        if lang == 'rust':
+            template = pkgutil.get_data('atcoder_cli', 'resources/rust/template.rs').decode()
+            for p in problems:
+                with open(base/'src'/f'{p}.{lg.suffix(lang)}', 'w') as f:
+                    f.write(template)
+            cargo = pkgutil.get_data('atcoder_cli', 'resources/rust/Cargo.toml').decode()
+            with open(base/'Cargo.toml', 'w') as w:
+                w.write(cargo + '\n')
+            for p in problems:
+                abs_path = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
+                w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
+        print(f'make directories and files under `{base}`.')
+                
+    conf = {'contest': contest, 'lang': lang}
+    conf['src'] = {}
+    for p in problems:
+        conf['src'][p] = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
+    io.dump_conf(conf)
+    print(f'edit {io.data_dir/"conf.json"}')
 
 def command_sub(args: argparse.Namespace) -> None:
     data = _validate_sub(args)
@@ -65,38 +70,43 @@ def command_sub(args: argparse.Namespace) -> None:
     io.dump_session(session)
 
     if args.force:
-        atcoder.submit(data['contest'], args.problem, data['lang'], src, session)
+        atcoder.submit(data['contest'], args.problem, lg.number(data['lang']), src, session)
         print('submit without testing.')
         return
 
     samples = io.get_inout_samples(data['contest'], args.problem, session)
     submit = True
     for stdin, stdout in zip(samples['input'], samples['output']):
-        result = wrapper.code_test(data['contest'], data['lang'], src, stdin, session)
+        result = wrapper.code_test(data['contest'], lg.number(data['lang']), src, stdin, session)
+        if not result:
+            print(f"{FAILC}Couldn't get the result of the custom test from AtCoder server.{ENDC}")
+            exit()
         if result['Result']['ExitCode'] == 0 and result['Stdout'] == stdout:
             continue
         submit = False
+        print('-------------------------------------')
         print('[in]')
         print(stdin.rstrip())
         if result['Result']['ExitCode'] == 9:
-            print(f'{FAILC}TLE{FAILC}')
+            print(f'{FAILC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
             print('[err]')
             print(result['Stderr'].rstrip())
-            print(f'{WARNINGC}CE or RE{WARNINGC}')
+            print(f'{WARNINGC}CE or RE{ENDC}')
         else:
             print('[expected]')
             print(stdout.rstrip())
             print('[out]')
             print(result['Stdout'].rstrip())
-            print(f'{FAILC}WA{FAILC}')
+            print(f'{FAILC}WA{ENDC}')
     if submit:
-        atcoder.submit(data['contest'], args.problem, data['lang'], src, session)
+        atcoder.submit(data['contest'], args.problem, lg.number(data['lang']), src, session)
         print('passed all test. submit.')
     
 
 def command_test(args: argparse.Namespace) -> None:
     data = _validate_sub(args)
+    
     src = ''
     with open(data['src'], 'r') as f:
         src = f.read()
@@ -105,33 +115,37 @@ def command_test(args: argparse.Namespace) -> None:
 
     samples = io.get_inout_samples(data['contest'], args.problem, session)
     for stdin, stdout in zip(samples['input'], samples['output']):
+        print('-------------------------------------')
         print('[in]')
         print(stdin.rstrip())
         print('[expected]')
         print(stdout.rstrip())
-        result = wrapper.code_test(data['contest'], data['lang'], src, stdin, session)
+        result = wrapper.code_test(data['contest'], lg.number(data['lang']), src, stdin, session)
+        if not result:
+            print(f"{FAILC}Couldn't get the result of the custom test from AtCoder server.{ENDC}")
+            continue
         if result['Result']['ExitCode'] == 9:
-            print(f'{FAILC}TLE{FAILC}')
+            print(f'{FAILC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
             print('[err]')
             print(result['Stderr'].rstrip())
-            print(f'{WARNINGC}CE or RE{WARNINGC}')
+            print(f'{WARNINGC}CE or RE{ENDC}')
         else:
             print('[out]')
-            print(result['Stdout'].rstip())
+            print(result['Stdout'].rstrip())
             if result['Stdout'] == stdout:
-                print(f'{GREEN}AC{GREEN}')
+                print(f'{GREEN}AC{ENDC}')
             else:
-                print(f'{FAILC}WA{FAILC}')
+                print(f'{FAILC}WA{ENDC}')
     
 
 def command_result(args: argparse.Namespace) -> None:
-    # validate
+    # validation for contest
     contest = args.contest
     if contest is None and io.has_conf():
         contest = io.load_conf().get('contest', None)
     if contest is None:
-        print(f'{FAILC}use -c option or edit conf.json to specify a contest.{FAILC}')
+        print(f'{FAILC}use -c option or edit conf.json to specify a contest name.{ENDC}')
         exit()
 
     session = _get_session()
@@ -178,17 +192,17 @@ def main() -> None:
     parser_login.set_defaults(func=command_login)
 
     # gen
-    parser_gen = subparsers.add_parser('gen', help='set defaults and make directories for the contest')
+    parser_gen = subparsers.add_parser('gen', help='set conf.json and make directories for the contest')
     parser_gen.add_argument('contest', help='contest name')
-    parser_gen.add_argument('-l', '--lang', choices=langs, help='programming language')
+    parser_gen.add_argument('-l', '--lang', choices=langs, help='language for your source code')
     parser_gen.set_defaults(func=command_gen)
 
     # test
     parser_test = subparsers.add_parser('test', help='test your code on AtCoder server')
     parser_test.add_argument('problem', help='problem to solve')
     parser_test.add_argument('-c', '--contest', help='contest name')
-    parser_test.add_argument('-l', '--lang', choices=langs, help='programming language for your code')
-    parser_test.add_argument('-s', '--src', help='path to your sourcecode file')
+    parser_test.add_argument('-l', '--lang', choices=langs, help='language for your source code')
+    parser_test.add_argument('-s', '--src', help='path to your source code file')
     parser_test.set_defaults(func=command_test)
 
     # sub
@@ -196,8 +210,8 @@ def main() -> None:
     parser_sub.add_argument('problem', help='problem to solve')
     parser_sub.add_argument('-f', '--force', action='store_true', help='submit without testing')
     parser_sub.add_argument('-c', '--contest', help='contest name')
-    parser_sub.add_argument('-l', '--lang', choices=langs, help='programming language for your code')
-    parser_sub.add_argument('-s', '--src', help='path to your sourcecode file')
+    parser_sub.add_argument('-l', '--lang', choices=langs, help='language for your code')
+    parser_sub.add_argument('-s', '--src', help='path to your source code file')
     parser_sub.set_defaults(func=command_sub)
 
     # result
@@ -237,7 +251,7 @@ def _login(session: Session) -> None:
     atcoder.login(username, password, session)
     cur = atcoder.get_current_user(session)
     if not (cur and (cur == username)):
-        print(f'{FAILC}Failed to login.{FAILC}')
+        print(f'{FAILC}Failed to login.{ENDC}')
         exit()
 
 
@@ -254,7 +268,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     elif 'contest' in conf:
         res['contest'] = conf['contest']
     else:
-        print(f'{FAILC}use -c option or edit conf.json to specify a contest.{FAILC}')
+        print(f'{FAILC}use -c option or edit conf.json to specify a contest name.{ENDC}')
         exit_flag = True
     
     # lang
@@ -263,7 +277,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     elif 'lang' in conf:
         res['lang'] = conf['lang']
     else:
-        print(f'{FAILC}use -l option or edit conf.json to specify a language.{FAILC}')
+        print(f'{FAILC}use -l option or edit conf.json to specify a language.{ENDC}')
         exit_flag = True
     
     # src
@@ -272,7 +286,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     elif ('src' in conf) and (args.problem in conf['src']):
         res['src'] = conf['src'][args.problem]
     else:
-        print(f'{FAILC}use -s option or edit conf.json to specify a path to the sourcecode.{FAILC}')
+        print(f'{FAILC}use -s option or edit conf.json to specify a path to the source code.{ENDC}')
         exit_flag = True
     
     if exit_flag:
