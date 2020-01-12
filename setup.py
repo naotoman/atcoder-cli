@@ -6,8 +6,10 @@ from setuptools import setup, find_packages
 with open('LICENSE') as f:
     license = f.read()
 
+
 def _requires_from_file(filename):
     return open(filename).read().splitlines()
+
 
 setup(
     name='atcoder-cli',
@@ -25,4 +27,3 @@ setup(
         'console_scripts': ['atc=atcoder_cli.commands:main'],
     }
 )
-

@@ -9,20 +9,26 @@ _LANGS = {
     'java': ('3016', 'java', 'Java8 (OpenJDK 1.8.0)', 'java')
 }
 
+
 def langs() -> List[str]:
     return list(_LANGS.keys())
+
 
 def exists(lang: str) -> bool:
     return str in _LANGS
 
+
 def number(lang: str) -> str:
     return _LANGS[lang][0]
+
 
 def suffix(lang: str) -> str:
     return _LANGS[lang][1]
 
+
 def full_name(lang: str) -> str:
     return _LANGS[lang][2]
+
 
 def dir_name(lang: str) -> str:
     return _LANGS[lang][3]

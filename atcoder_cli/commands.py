@@ -2,9 +2,9 @@ import pkgutil
 from typing import Dict
 import argparse
 from pathlib import Path
+import getpass
 import requests
 from requests.sessions import Session
-import getpass
 
 from . import atcoder
 from . import wrapper
@@ -34,7 +34,7 @@ def command_gen(args: argparse.Namespace) -> None:
 
     base = Path('.')/contest/lg.dir_name(lang)
     if base.exists():
-        print(f'{base} already exists. make no change for the directories.')
+        print(f'{base} already exists. made no change for the directories.')
     else:
         (base/'src').mkdir(parents=True)
         for p in problems:
@@ -59,6 +59,7 @@ def command_gen(args: argparse.Namespace) -> None:
         conf['src'][p] = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
     io.dump_conf(conf)
     print(f'edit {io.data_dir/"conf.json"}')
+
 
 def command_sub(args: argparse.Namespace) -> None:
     data = _validate_sub(args)
@@ -223,7 +224,6 @@ def main() -> None:
     parser_user = subparsers.add_parser('user', help='show the logged in user')
     parser_user.set_defaults(func=command_user)
 
-
     info_dir = Path.home()/'.atcoder_cli_info'
     if not info_dir.exists():
         info_dir.mkdir()
@@ -233,8 +233,6 @@ def main() -> None:
     args.func(args)
 
 
-# below: funtctions used only in this file ################
-
 def _get_session() -> Session:
     if io.has_session():
         session = io.load_session()
@@ -243,7 +241,7 @@ def _get_session() -> Session:
     session = requests.Session()
     _login(session)
     return session
-        
+
 
 def _login(session: Session) -> None:
     username = input('Username: ')
@@ -270,7 +268,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     else:
         print(f'{FAILC}use -c option or edit conf.json to specify a contest name.{ENDC}')
         exit_flag = True
-    
+
     # lang
     if args.lang is not None:
         res['lang'] = args.lang
@@ -279,7 +277,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     else:
         print(f'{FAILC}use -l option or edit conf.json to specify a language.{ENDC}')
         exit_flag = True
-    
+
     # src
     if args.src is not None:
         res['src'] = args.src
@@ -288,7 +286,7 @@ def _validate_sub(args: argparse.Namespace) -> Dict[str, str]:
     else:
         print(f'{FAILC}use -s option or edit conf.json to specify a path to the source code.{ENDC}')
         exit_flag = True
-    
+
     if exit_flag:
         exit()
     return res
