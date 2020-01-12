@@ -91,15 +91,13 @@ def command_sub(args: argparse.Namespace) -> None:
         if result['Result']['ExitCode'] == 9:
             print(f'{FAILC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
-            print('[err]')
+            print(f'{FAILC}[err]{ENDC}')
             print(result['Stderr'].rstrip())
-            print(f'{WARNINGC}CE or RE{ENDC}')
         else:
             print('[expected]')
             print(stdout.rstrip())
             print('[out]')
             print(result['Stdout'].rstrip())
-            print(f'{FAILC}WA{ENDC}')
     if submit:
         atcoder.submit(data['contest'], args.problem, lg.number(data['lang']), src, session)
         print('passed all test. submit.')
@@ -128,17 +126,12 @@ def command_test(args: argparse.Namespace) -> None:
         if result['Result']['ExitCode'] == 9:
             print(f'{FAILC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
-            print('[err]')
+            print(f'{FAILC}[err]{ENDC}')
             print(result['Stderr'].rstrip())
-            print(f'{WARNINGC}CE or RE{ENDC}')
         else:
             print('[out]')
             print(result['Stdout'].rstrip())
-            if result['Stdout'] == stdout:
-                print(f'{GREEN}AC{ENDC}')
-            else:
-                print(f'{FAILC}WA{ENDC}')
-    
+
 
 def command_result(args: argparse.Namespace) -> None:
     # validation for contest
