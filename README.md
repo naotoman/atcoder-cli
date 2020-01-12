@@ -11,10 +11,8 @@ $ python3 -m pip install git+https://github.com/naotoman/atcoder-cli
 ```
 
 ## How to use
-For example, Let's join ABC140 with python3.  
-
 ### Quickstart
-The most basic way to use this tool is the following.  
+For example, Let's join ABC140 with python3.  
 
 __1. Init__  
 Type this command.  
