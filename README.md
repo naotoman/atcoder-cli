@@ -11,10 +11,8 @@ $ python3 -m pip install git+https://github.com/naotoman/atcoder-cli
 ```
 
 ## How to use
-For example, Let's join ABC140 with python3.  
-
 ### Quickstart
-The most basic way to use this tool is the following.  
+For example, Let's join ABC140 with python3.  
 
 __1. Init__  
 Type this command.  
@@ -47,7 +45,7 @@ This shows the results of the newest submission for each problem and also tells 
 If you have your own directory structure for the contests, You don't need to run `atc gen`.  
 Instead, edit the file `$HOME/.atcoder_cli_info/conf.json`.  
 This is an example of conf.json.  
-```json:conf.json
+```json
 {
     "contest": "abc149",
     "lang": "python",
