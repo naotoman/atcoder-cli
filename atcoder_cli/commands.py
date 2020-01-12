@@ -51,14 +51,14 @@ def command_gen(args: argparse.Namespace) -> None:
                 for p in problems:
                     abs_path = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
                     w.write(f'[[bin]]\nname = "{p}"\npath = "{abs_path}"\n\n')
-        print(f'make directories and files under `{base}`.')
-                
+        print(f'made directories and files under `{base}`.')
+       
     conf = {'contest': contest, 'lang': lang}
     conf['src'] = {}
     for p in problems:
         conf['src'][p] = str((base/'src'/f'{p}.{lg.suffix(lang)}').resolve())
     io.dump_conf(conf)
-    print(f'edit {io.data_dir/"conf.json"}')
+    print(f'edited {io.data_dir/"conf.json"}')
 
 
 def command_sub(args: argparse.Namespace) -> None:
@@ -89,9 +89,9 @@ def command_sub(args: argparse.Namespace) -> None:
         print('[in]')
         print(stdin.rstrip())
         if result['Result']['ExitCode'] == 9:
-            print(f'{FAILC}TLE{ENDC}')
+            print(f'{WARNINGC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
-            print(f'{FAILC}[err]{ENDC}')
+            print(f'{WARNINGC}[err]{ENDC}')
             print(result['Stderr'].rstrip())
         else:
             print('[expected]')
@@ -124,9 +124,9 @@ def command_test(args: argparse.Namespace) -> None:
             print(f"{FAILC}Couldn't get the result of the custom test from AtCoder server.{ENDC}")
             continue
         if result['Result']['ExitCode'] == 9:
-            print(f'{FAILC}TLE{ENDC}')
+            print(f'{WARNINGC}TLE{ENDC}')
         elif result['Result']['ExitCode'] != 0:
-            print(f'{FAILC}[err]{ENDC}')
+            print(f'{WARNINGC}[err]{ENDC}')
             print(result['Stderr'].rstrip())
         else:
             print('[out]')
@@ -160,10 +160,12 @@ def command_result(args: argparse.Namespace) -> None:
         else:
             print(f'{l_str}')
 
+
 def command_login(args: argparse.Namespace) -> None:
     session = requests.Session()
     _login(session)
     io.dump_session(session)
+
 
 def command_user(args: argparse.Namespace) -> None:
     if io.has_session():
