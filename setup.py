@@ -13,7 +13,7 @@ def _requires_from_file(filename):
 
 setup(
     name='atcoder-cli',
-    version='0.1.1',
+    version='0.1.2',
     description='cli tools for AtCoder.',
     author='Naoto Kido',
     url='https://github.com/naotoman/atcoder-cli',

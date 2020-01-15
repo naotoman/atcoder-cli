@@ -25,7 +25,7 @@ def command_gen(args: argparse.Namespace) -> None:
     if lang is None:
         print(f'{FAILC}use -l option or edit conf.json to specify a language.{ENDC}')
         exit()
-    
+
     contest = args.contest
     session = _get_session()
     io.dump_session(session)
@@ -36,15 +36,17 @@ def command_gen(args: argparse.Namespace) -> None:
     if base.exists():
         print(f'{base} already exists. made no change for the directories.')
     else:
+        template = ''
+        template_path = io.data_dir/'templates'/f'template.{lg.suffix(lang)}'
+        if template_path.exists():
+            with open(template_path, 'r') as f:
+                template = f.read()
         (base/'src').mkdir(parents=True)
         for p in problems:
-            (base/'src'/f'{p}.{lg.suffix(lang)}').touch()
+            with open(base/'src'/f'{p}.{lg.suffix(lang)}', 'w') as f:
+                f.write(template)
         # if lang is 'rust', set additional files.
         if lang == 'rust':
-            template = pkgutil.get_data('atcoder_cli', 'resources/rust/template.rs').decode()
-            for p in problems:
-                with open(base/'src'/f'{p}.{lg.suffix(lang)}', 'w') as f:
-                    f.write(template)
             cargo = pkgutil.get_data('atcoder_cli', 'resources/rust/Cargo.toml').decode()
             with open(base/'Cargo.toml', 'w') as w:
                 w.write(cargo + '\n')
@@ -223,6 +225,7 @@ def main() -> None:
     if not info_dir.exists():
         info_dir.mkdir()
         info_dir.chmod(0o700)
+        (info_dir/'templates').mkdir()
 
     args = parser.parse_args()
     args.func(args)
